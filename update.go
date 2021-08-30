@@ -126,6 +126,10 @@ other options are ignored.
 			Name:  "mem-bw-schema",
 			Usage: "The string of Intel RDT/MBA memory bandwidth schema",
 		},
+		cli.StringFlag{
+			Name: "child-policy",
+			Usage: "How to handle child groups. Set 'force' to force values to all children.",
+		},
 	},
 	Action: func(context *cli.Context) error {
 		if err := checkArgs(context, 1, exactArgs); err != nil {
@@ -251,6 +255,13 @@ other options are ignored.
 			}
 
 			r.Pids.Limit = int64(context.Int("pids-limit"))
+		}
+		if val := context.String("child-policy"); val != "" {
+			if val == "force" {
+				config.Cgroups.Resources.ChildPolicy = val
+			} else {
+				return fmt.Errorf("invalid value for child-policy")
+			}
 		}
 
 		if *r.Memory.Kernel != 0 || *r.Memory.KernelTCP != 0 {

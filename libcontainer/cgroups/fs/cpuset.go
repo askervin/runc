@@ -4,6 +4,7 @@ package fs
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -28,7 +29,11 @@ func (s *CpusetGroup) Apply(path string, d *cgroupData) error {
 
 func (s *CpusetGroup) Set(path string, r *configs.Resources) error {
 	if r.CpusetCpus != "" {
+		if r.ChildPolicy == "force" {
+			return fmt.Errorf("--child-policy force NOT IMPLEMENTED") // TODO: set recursively to all children
+		}
 		if err := cgroups.WriteFile(path, "cpuset.cpus", r.CpusetCpus); err != nil {
+
 			return err
 		}
 	}
