@@ -660,6 +660,9 @@ func setupIOPriority(config *initConfig) error {
 }
 
 func setupMemoryPolicy(config *configs.Config) error {
+	if config.MemoryPolicy == nil {
+		return nil
+	}
 	return system.SetMempolicy(config.MemoryPolicy.Mode, config.MemoryPolicy.Nodes)
 }
 
