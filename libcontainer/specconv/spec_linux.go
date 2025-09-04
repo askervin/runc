@@ -516,10 +516,7 @@ func CreateLibcontainerConfig(opts *CreateOpts) (*configs.Config, error) {
 				MemBwSchema:   spec.Linux.IntelRdt.MemBwSchema,
 			}
 		}
-		if spec.Linux.MemoryPolicy != nil &&
-			(spec.Linux.MemoryPolicy.Mode != "" ||
-				spec.Linux.MemoryPolicy.Nodes != "" ||
-				len(spec.Linux.MemoryPolicy.Flags) > 0) {
+		if !isEmptyMemoryPolicy(spec.Linux.MemoryPolicy) {
 			var ok bool
 			specMp := spec.Linux.MemoryPolicy
 			confMp := &configs.LinuxMemoryPolicy{}
@@ -1248,6 +1245,23 @@ func parseListSet(listSet string, minValue, maxValue int) ([]int, error) {
 		}
 	}
 	return result, nil
+}
+
+// isEmptyMemoryPolicy checks if a LinuxMemoryPolicy is empty (nil or all zero values).
+func isEmptyMemoryPolicy(mp *specs.LinuxMemoryPolicy) bool {
+	if mp == nil {
+		return true
+	}
+	if mp.Mode != "" {
+		return false
+	}
+	if mp.Nodes != "" {
+		return false
+	}
+	if len(mp.Flags) > 0 {
+		return false
+	}
+	return true
 }
 
 func SetupSeccomp(config *specs.LinuxSeccomp) (*configs.Seccomp, error) {
