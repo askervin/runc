@@ -518,12 +518,15 @@ func CreateLibcontainerConfig(opts *CreateOpts) (*configs.Config, error) {
 		}
 		if !isEmptyMemoryPolicy(spec.Linux.MemoryPolicy) {
 			var ok bool
+			var err error
 			specMp := spec.Linux.MemoryPolicy
 			confMp := &configs.LinuxMemoryPolicy{}
-			if confMp.Mode, ok = mpolModeMap[specMp.Mode]; !ok {
+			confMp.Mode, ok = mpolModeMap[specMp.Mode]
+			if !ok {
 				return nil, fmt.Errorf("invalid memory policy mode %q", specMp.Mode)
 			}
-			if confMp.Nodes, err = parseListSet(specMp.Nodes, 0, maxNumaNode); err != nil {
+			confMp.Nodes, err = parseListSet(specMp.Nodes, 0, maxNumaNode)
+			if err != nil {
 				return nil, fmt.Errorf("invalid memory policy nodes %q: %w", specMp.Nodes, err)
 			}
 			for _, specFlag := range specMp.Flags {
