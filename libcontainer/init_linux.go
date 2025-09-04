@@ -663,7 +663,7 @@ func setupMemoryPolicy(config *configs.Config) error {
 	if config.MemoryPolicy == nil {
 		return nil
 	}
-	return system.SetMempolicy(config.MemoryPolicy.Mode, config.MemoryPolicy.Nodes)
+	return linux.SetMempolicy(config.MemoryPolicy.Mode, config.MemoryPolicy.Nodes)
 }
 
 func setupPersonality(config *configs.Config) error {
