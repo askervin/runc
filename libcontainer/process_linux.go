@@ -179,6 +179,21 @@ func tryResetCPUAffinity(pid int) {
 	for i := range buf {
 		buf[i] = 0xff
 	}
+	if err := linux.SchedGetaffinity(pid, buf); err != nil {
+		logrus.WithError(err).Warnf("reading the CPU affinity of pid %d failed -- the container process may inherit runc's CPU affinity", pid)
+		return
+	}
+	// If every CPU is already allowed, there is nothing to do.
+	allSet := true
+	for _, b := range buf {
+		if b != 0xff {
+			allSet = false
+			break
+		}
+	}
+	if allSet {
+		return
+	}
 	if err := linux.SchedSetaffinity(pid, buf); err != nil {
 		logrus.WithError(err).Warnf("resetting the CPU affinity of pid %d failed -- the container process may inherit runc's CPU affinity", pid)
 		return
