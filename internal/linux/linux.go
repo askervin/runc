@@ -67,13 +67,18 @@ func Recvfrom(fd int, p []byte, flags int) (n int, from unix.Sockaddr, err error
 }
 
 // SchedSetaffinity wraps sched_setaffinity syscall without unix.CPUSet size limitation.
-func SchedSetaffinity(pid int, buf []byte) (err error) {
+func SchedSetaffinity(pid int, s CPUSetS) (err error) {
+	ptr := unsafe.Pointer(uintptr(0)) // ensure unsafe is used
+	if len(s) > 0 {
+		ptr = unsafe.Pointer(&s[0])
+	}
 	err = retryOnEINTR(func() error {
 		_, _, errno := unix.Syscall(
 			unix.SYS_SCHED_SETAFFINITY,
 			uintptr(pid),
-			uintptr(len(buf)),
-			uintptr((unsafe.Pointer)(&buf[0])))
+			uintptr(len(s)*8),
+			uintptr(ptr),
+		)
 		if errno != 0 {
 			return os.NewSyscallError("sched_setaffinity", errno)
 		}
